@@ -24,10 +24,6 @@ const executeNeptuneRequests = async (method: string, resource: string, body) =>
       httpRequest,
       null,
       response => {
-        // const { statusCode, status } = response;
-        // if (statusCode < 200 || statusCode > 299) {
-        //   new HttpException(statusCode, 'Failed to load');
-        // }
         let responseBody = '';
         response.on('data', chunk => {
           responseBody += chunk;
@@ -53,18 +49,6 @@ export class NeptuneService {
 
   public async postNeptune(endpoint, body): Promise<any> {
     const response = await executeNeptuneRequests('POST', endpoint, body);
-    return JSON.parse(response);
-  }
-
-  public async putNeptune(endpoint, body): Promise<any> {
-    const endpoints = '/gremlin?gremlin=' + `g.V('b2c346e5-3ca8-d7fa-1af8-434523a918fc').drop()`;
-    const response = await executeNeptuneRequests('GET', endpoints, null);
-    // const response = await executeNeptuneRequests('PUT', endpoint, body);
-    return JSON.parse(response);
-  }
-
-  public async deleteNeptune(endpoint): Promise<any> {
-    const response = await executeNeptuneRequests('DELETE', endpoint, null);
     return JSON.parse(response);
   }
 }

@@ -1,7 +1,6 @@
 const AWS = require('aws-sdk');
 import { Service } from 'typedi';
 import { NEPTUNE_HOST, NEPTUNE_ACCESS_KEY, NEPTUNE_PORT, NEPTUNE_REGION, NEPTUNE_SECRET_KEY } from '@config';
-// import { HttpException } from '@exceptions/httpException';
 
 const executeNeptuneRequests = async (method: string, resource: string, body) => {
   const credentials = new AWS.Credentials(`${NEPTUNE_ACCESS_KEY}`, `${NEPTUNE_SECRET_KEY}`);

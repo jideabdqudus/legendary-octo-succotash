@@ -1,6 +1,7 @@
 const AWS = require('aws-sdk');
 import { Service } from 'typedi';
 import { NEPTUNE_HOST, NEPTUNE_ACCESS_KEY, NEPTUNE_PORT, NEPTUNE_REGION, NEPTUNE_SECRET_KEY } from '@config';
+import { HttpException } from '@exceptions/httpException';
 
 const executeNeptuneRequests = async (method: string, resource: string, body) => {
   const credentials = new AWS.Credentials(`${NEPTUNE_ACCESS_KEY}`, `${NEPTUNE_SECRET_KEY}`);
@@ -17,18 +18,27 @@ const executeNeptuneRequests = async (method: string, resource: string, body) =>
   const signer = new AWS.Signers.V4(httpRequest, 'neptune-db');
   signer.addAuthorization(credentials, new Date());
 
-  const response: string = await new Promise((resolve, reject) => {
+  const response: string = await new Promise((resolve: any, reject) => {
     const client = new AWS.HttpClient();
     client.handleRequest(
       httpRequest,
       null,
       response => {
-        let responseBody = '';
+        let body = '';
+        const { statusCode, statusMessage, headers } = response;
         response.on('data', chunk => {
-          responseBody += chunk;
+          body += chunk;
         });
         response.on('end', () => {
-          resolve(responseBody);
+          const data = {
+            statusCode,
+            statusMessage,
+            headers,
+          };
+          if (body) {
+            data['body'] = JSON.parse(body);
+          }
+          resolve(data);
         });
       },
       error => {
@@ -42,12 +52,32 @@ const executeNeptuneRequests = async (method: string, resource: string, body) =>
 @Service()
 export class NeptuneService {
   public async getNeptune(endpoint): Promise<any> {
-    const response = await executeNeptuneRequests('GET', endpoint, null);
-    return JSON.parse(response);
+    const response: any = await executeNeptuneRequests('GET', endpoint, null);
+    const { headers, statusCode, statusMessage, body: responseBody } = response;
+    if (statusCode !== 200) {
+      const error = {
+        statusCode: statusCode,
+        statusMessage: statusMessage,
+      };
+      if (headers['x-amzn-errortype']) error['errorType'] = headers['x-amzn-errortype'];
+      if (responseBody['detailedMessage']) error['detailedMessage'] = responseBody['detailedMessage'];
+      throw new HttpException(statusCode, statusMessage, error);
+    }
+    return responseBody;
   }
 
   public async postNeptune(endpoint, body): Promise<any> {
-    const response = await executeNeptuneRequests('POST', endpoint, body);
-    return JSON.parse(response);
+    const response: any = await executeNeptuneRequests('POST', endpoint, body);
+    const { headers, statusCode, statusMessage, body: responseBody } = response;
+    if (statusCode !== 200) {
+      const error = {
+        statusCode: statusCode,
+        statusMessage: statusMessage,
+      };
+      if (headers['x-amzn-errortype']) error['errorType'] = headers['x-amzn-errortype'];
+      if (responseBody['detailedMessage']) error['detailedMessage'] = responseBody['detailedMessage'];
+      throw new HttpException(statusCode, statusMessage, error);
+    }
+    return responseBody;
   }
 }

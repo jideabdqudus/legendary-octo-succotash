@@ -57,6 +57,10 @@ export class App {
     routes.forEach(route => {
       this.app.use('/', route.router);
     });
+    // make get request to /test
+    this.app.get('/test', (req, res) => {
+      res.send('Hello World!');
+    });
   }
 
   private initializeSwagger() {

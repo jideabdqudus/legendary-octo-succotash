@@ -8,6 +8,8 @@ const executeNeptuneRequests = async (method: string, resource: string, body) =>
   const endpoint: any = new AWS.Endpoint(`https://${NEPTUNE_HOST}${resource}`);
   endpoint.port = `${NEPTUNE_PORT}`;
 
+  console.log(endpoint, 'endpoint');
+
   const httpRequest = new AWS.HttpRequest(endpoint, `${NEPTUNE_REGION}`);
   httpRequest.method = method;
   httpRequest.headers.host = NEPTUNE_HOST;
@@ -17,6 +19,8 @@ const executeNeptuneRequests = async (method: string, resource: string, body) =>
   }
   const signer = new AWS.Signers.V4(httpRequest, 'neptune-db');
   signer.addAuthorization(credentials, new Date());
+
+  console.log(signer, 'signer');
 
   const response: string = await new Promise((resolve: any, reject) => {
     const client = new AWS.HttpClient();
@@ -42,10 +46,12 @@ const executeNeptuneRequests = async (method: string, resource: string, body) =>
         });
       },
       error => {
+        console.log(reject, 'reject');
         reject(error);
       },
     );
   });
+  console.log(response, 'response');
   return response;
 };
 
@@ -53,6 +59,7 @@ const executeNeptuneRequests = async (method: string, resource: string, body) =>
 export class NeptuneService {
   public async getNeptune(endpoint): Promise<any> {
     const response: any = await executeNeptuneRequests('GET', endpoint, null);
+    console.log('response', response);
     const { headers, statusCode, statusMessage, body: responseBody } = response;
     if (statusCode !== 200) {
       const error = {

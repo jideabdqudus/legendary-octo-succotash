@@ -10,6 +10,7 @@ export class ArticlesController {
     try {
       const endpoint = '/gremlin?gremlin=' + encodeURIComponent('g.V()');
       const articlesData: any = await this.neptune.getNeptune(endpoint);
+      console.log('inside of get articles');
       res.status(200).json({ success: true, message: 'getArticles', articles: transformGetResponseData(articlesData) });
     } catch (error) {
       next(error);

@@ -13,10 +13,7 @@ export class ArticlesRoute implements Routes {
   private initializeRoutes() {
     this.router.get(`${this.path}/lookup`, this.articles.searchArticle);
     this.router.get(`${this.path}/:id([a-zA-Z0-9-]+)`, this.articles.getArticleById);
-    // this.router.get(`${this.path}`, this.articles.getArticles);
-    this.router.get(`${this.path}`,  async (req, res) => {
-      res.status(200).json({ success: true, message: 'getArticles', articles: 'Enuf' })
-    });
+    this.router.get(`${this.path}`, this.articles.getArticles);
     this.router.post(`${this.path}`, this.articles.createArticle);
     this.router.put(`${this.path}/:id([a-zA-Z0-9-]+)`, this.articles.updateArticle);
     this.router.delete(`${this.path}/:id([a-zA-Z0-9-]+)`, this.articles.deleteArticle);

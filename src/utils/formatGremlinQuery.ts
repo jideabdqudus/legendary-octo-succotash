@@ -7,6 +7,27 @@ const isJSON = value => {
   return true;
 };
 
+const escapeApostrophe = value => {
+  if (typeof value == 'string' && value.includes("'")) return value.replace(/'/g, "\\'");
+  return value;
+};
+
+const replaceApostrophe = (data, depth = 0) => {
+  if (Array.isArray(data)) {
+    // If the data is an array, iterate over each element and recursively call the replaceApostrophe function
+    data.forEach(element => replaceApostrophe(element));
+  } else if (typeof data === 'object' && data !== null) {
+    // If the data is an object, iterate over its properties and recursively call the replaceApostrophe function
+    for (const key in data) {
+      if (typeof data[key] === 'object' && data[key] !== null) {
+        replaceApostrophe(data[key]);
+      } else if (typeof data[key] === 'string') {
+        data[key] = data[key].replace(/'/g, "//'"); // Replace apostrophe with //'
+      }
+    }
+  }
+};
+
 const transformGetResponseData = responseData => {
   const vertices = responseData?.result?.data['@value'];
   // Transform each vertex into a simplified object

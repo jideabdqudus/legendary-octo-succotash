@@ -33,7 +33,7 @@ export class ArticlesController {
         gremlin: generateGremlinPostArticleQuery(req.body),
       };
       const articlesData: any = await this.neptune.postNeptune('/gremlin?gremlin', body);
-      res.status(200).json({ success: true, message: 'createArticle', data: transformGetResponseData(articlesData) });
+      res.status(200).json({ success: true, message: 'createArticle', data: transformGetResponseData(articlesData)[0] });
     } catch (error) {
       next(error);
     }

@@ -8,24 +8,31 @@ const isJSON = value => {
 };
 
 const escapeApostrophe = value => {
-  if (typeof value == 'string' && value.includes("'")) return value.replace(/'/g, "\\'");
+  if (typeof value == 'string' && value.includes("'")) return value.replace(/'/g, '\u2019');
   return value;
 };
 
-const replaceApostrophe = (data, depth = 0) => {
-  if (Array.isArray(data)) {
-    // If the data is an array, iterate over each element and recursively call the replaceApostrophe function
-    data.forEach(element => replaceApostrophe(element));
-  } else if (typeof data === 'object' && data !== null) {
-    // If the data is an object, iterate over its properties and recursively call the replaceApostrophe function
-    for (const key in data) {
-      if (typeof data[key] === 'object' && data[key] !== null) {
-        replaceApostrophe(data[key]);
-      } else if (typeof data[key] === 'string') {
-        data[key] = data[key].replace(/'/g, "//'"); // Replace apostrophe with //'
+const replaceApostrophe = obj => {
+  if (typeof obj === 'object') {
+    if (Array.isArray(obj)) {
+      for (let i = 0; i < obj.length; i++) {
+        if (typeof obj[i] === 'string') {
+          obj[i] = obj[i].replace(/'/g, '\u2019');
+        } else {
+          obj[i] = replaceApostrophe(obj[i]);
+        }
+      }
+    } else {
+      for (const key in obj) {
+        if (typeof obj[key] === 'string') {
+          obj[key] = obj[key].replace(/'/g, '\u2019');
+        } else {
+          obj[key] = replaceApostrophe(obj[key]);
+        }
       }
     }
   }
+  return obj;
 };
 
 const transformGetResponseData = responseData => {
@@ -53,10 +60,11 @@ function generateGremlinPostArticleQuery(data) {
   for (const key in data) {
     if (data.hasOwnProperty(key)) {
       if (typeof data[key] === 'object') {
-        query += `.property('${key}', '${JSON.stringify(data[key])}')`;
+        const cleanObject = replaceApostrophe(data[key]);
+        query += `.property('${key}', '${JSON.stringify(cleanObject)}')`;
         continue;
       }
-      query += `.property('${key}', '${data[key]}')`;
+      query += `.property('${key}', '${escapeApostrophe(data[key])}')`;
     }
   }
   return query;

@@ -10,7 +10,6 @@ export class ArticlesController {
     try {
       const endpoint = '/gremlin?gremlin=' + encodeURIComponent('g.V()');
       const articlesData: any = await this.neptune.getNeptune(endpoint);
-      console.log('inside of get articles');
       res.status(200).json({ success: true, message: 'getArticles', articles: transformGetResponseData(articlesData) });
     } catch (error) {
       next(error);
@@ -40,6 +39,17 @@ export class ArticlesController {
     }
   };
 
+  public deleteArticle = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+    try {
+      const id = req.params.id;
+      const endpoint = `/gremlin?gremlin=g.V('${encodeURIComponent(id)}').drop()`;
+      const articlesData: any = await this.neptune.getNeptune(endpoint);
+      res.status(200).json({ success: true, message: 'deleteArticle', data: transformGetResponseData(articlesData) });
+    } catch (error) {
+      next(error);
+    }
+  };
+
   public updateArticle = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     try {
       const id = req.params.id;
@@ -47,17 +57,6 @@ export class ArticlesController {
       const query = `/gremlin?gremlin=g.V('${id}').property(single, 'title', '${title}').property(single, 'content', '${content}')`;
       const updatedData: any = await this.neptune.getNeptune(query);
       res.status(200).json({ success: true, message: 'updateArticle', data: transformGetResponseData(updatedData)[0] });
-    } catch (error) {
-      next(error);
-    }
-  };
-
-  public deleteArticle = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
-    try {
-      const id = req.params.id;
-      const endpoint = `/gremlin?gremlin=g.V('${encodeURIComponent(id)}').drop()`;
-      const articlesData: any = await this.neptune.getNeptune(endpoint);
-      res.status(200).json({ success: true, message: 'deleteArticle', data: transformGetResponseData(articlesData) });
     } catch (error) {
       next(error);
     }
